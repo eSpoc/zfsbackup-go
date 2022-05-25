@@ -189,6 +189,11 @@ func init() {
 		false,
 		"store intermediary snapshots when using smart options",
 	)
+	sendCmd.Flags().StringVar(
+		&jobInfo.LocalVolume,
+		"localVolume",
+		"",
+		"the local volume name if different from the S3 volume")
 }
 
 // ResetSendJobInfo exists solely for integration testing
