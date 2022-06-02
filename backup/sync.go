@@ -148,6 +148,7 @@ func validateSnapShotExists(ctx context.Context, snapshot *files.SnapshotInfo, t
 
 func validateSnapShotExistsFromSnaps(snapshot *files.SnapshotInfo, snapshots []files.SnapshotInfo, includeBookmarks bool) bool {
 	for _, snap := range snapshots {
+		log.AppLogger.Debugf("snap %s = %s (%v, %v)?", snap.Name, snapshot.Name, snap.CreationTime, snapshot.CreationTime)
 		if !includeBookmarks && snap.Bookmark {
 			continue
 		}

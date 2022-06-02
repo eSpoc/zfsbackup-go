@@ -262,7 +262,11 @@ func updateJobInfo(args []string) error {
 			return errInvalidInput
 		}
 		jobInfo.BaseSnapshot = files.SnapshotInfo{Name: parts[1]}
-		creationTime, err := zfs.GetCreationDate(context.TODO(), args[0])
+		localBaseSnapVolumeName := args[0]
+		if jobInfo.LocalVolume != "" {
+			localBaseSnapVolumeName = jobInfo.LocalVolume
+		}
+		creationTime, err := zfs.GetCreationDate(context.TODO(), localBaseSnapVolumeName)
 		if err != nil {
 			log.AppLogger.Errorf("Error trying to get creation date of specified base snapshot - %v", err)
 			return err
@@ -271,14 +275,15 @@ func updateJobInfo(args []string) error {
 
 		if jobInfo.IncrementalSnapshot.Name != "" {
 			var targetName string
-			jobInfo.IncrementalSnapshot.Name = strings.TrimPrefix(jobInfo.IncrementalSnapshot.Name, jobInfo.VolumeName)
+			localVolumeName := zfs.GetLocalVolumeName(&jobInfo)
+			jobInfo.IncrementalSnapshot.Name = strings.TrimPrefix(jobInfo.IncrementalSnapshot.Name, localVolumeName)
 			if strings.HasPrefix(jobInfo.IncrementalSnapshot.Name, "#") {
 				jobInfo.IncrementalSnapshot.Name = strings.TrimPrefix(jobInfo.IncrementalSnapshot.Name, "#")
-				targetName = fmt.Sprintf("%s#%s", jobInfo.VolumeName, jobInfo.IncrementalSnapshot.Name)
+				targetName = fmt.Sprintf("%s#%s", localVolumeName, jobInfo.IncrementalSnapshot.Name)
 				jobInfo.IncrementalSnapshot.Bookmark = true
 			} else {
 				jobInfo.IncrementalSnapshot.Name = strings.TrimPrefix(jobInfo.IncrementalSnapshot.Name, "@")
-				targetName = fmt.Sprintf("%s@%s", jobInfo.VolumeName, jobInfo.IncrementalSnapshot.Name)
+				targetName = fmt.Sprintf("%s@%s", localVolumeName, jobInfo.IncrementalSnapshot.Name)
 			}
 
 			creationTime, err = zfs.GetCreationDate(context.TODO(), targetName)
