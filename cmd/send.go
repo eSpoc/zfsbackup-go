@@ -262,9 +262,16 @@ func updateJobInfo(args []string) error {
 			return errInvalidInput
 		}
 		jobInfo.BaseSnapshot = files.SnapshotInfo{Name: parts[1]}
-		localBaseSnapVolumeName := args[0]
+		var localBaseSnapVolumeName string
 		if jobInfo.LocalVolume != "" {
-			localBaseSnapVolumeName = jobInfo.LocalVolume
+			argParts := strings.Split(args[0], "@")
+			if len(argParts) == 2 {
+				localBaseSnapVolumeName = fmt.Sprintf("%s@%s", jobInfo.LocalVolume, argParts[1])
+			} else {
+				localBaseSnapVolumeName = jobInfo.LocalVolume
+			}
+		} else {
+			localBaseSnapVolumeName = args[0]
 		}
 		creationTime, err := zfs.GetCreationDate(context.TODO(), localBaseSnapVolumeName)
 		if err != nil {
